@@ -23,7 +23,27 @@ mkdir sample
 
 cd sample/
 
-kubebuilder init --domain my.domain --repo my.domain/guestbook --plugins=go/v4-alpha
+kubebuilder init --domain kubefirst.io --license apache2 --owner "K-rays" --repo github.com/k1tests/basic-controller
 
-kubebuilder create api --group webapp --version v1 --kind Guestbook
+kubebuilder create api --group k1 --version v1beta1 --kind Watcher --controller --resource
+
+make manifests
+
+make install
+
+make run
+
+kubectl get watcher
+
+kubectl get crd 
+```
+
+# Sample Watcher
+```yaml 
+apiVersion: k1.kubefirst.io/v1beta1
+kind: Watcher
+metadata:
+  name: watcher-sample-01
+spec:
+    size: 1
 ```

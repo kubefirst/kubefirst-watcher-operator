@@ -1,0 +1,16 @@
+domain: kubefirst.io
+layout:
+- go.kubebuilder.io/v3
+projectName: watcher
+repo: github.com/k1tests/basic-controller
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: kubefirst.io
+  group: k1
+  kind: Watcher
+  path: github.com/k1tests/basic-controller/api/v1beta1
+  version: v1beta1
+version: "3"
