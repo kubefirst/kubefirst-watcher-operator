@@ -35,18 +35,96 @@ spec:
           spec:
             description: WatcherSpec defines the desired state of Watcher
             properties:
+              configmaps:
+                items:
+                  description: BasicConfigurationCondition general match rules
+                  properties:
+                    apiVersion:
+                      type: string
+                    id:
+                      type: integer
+                    kind:
+                      type: string
+                    labels:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                  required:
+                  - name
+                  - namespace
+                  type: object
+                type: array
+              exit:
+                description: Quantity of instances
+                format: int32
+                type: integer
               foo:
                 description: Foo is an example field of Watcher. Edit watcher_types.go
                   to remove/update
                 type: string
+              secrets:
+                items:
+                  description: BasicConfigurationCondition general match rules
+                  properties:
+                    apiVersion:
+                      type: string
+                    id:
+                      type: integer
+                    kind:
+                      type: string
+                    labels:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                  required:
+                  - name
+                  - namespace
+                  type: object
+                type: array
+              services:
+                items:
+                  description: BasicConfigurationCondition general match rules
+                  properties:
+                    apiVersion:
+                      type: string
+                    id:
+                      type: integer
+                    kind:
+                      type: string
+                    labels:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                  required:
+                  - name
+                  - namespace
+                  type: object
+                type: array
               size:
                 description: Quantity of instances
                 format: int32
                 maximum: 10
                 minimum: 1
                 type: integer
+              timeout:
+                format: int32
+                type: integer
             required:
+            - exit
             - size
+            - timeout
             type: object
           status:
             description: WatcherStatus defines the observed state of Watcher

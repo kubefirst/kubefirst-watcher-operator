@@ -35,6 +35,23 @@ type WatcherSpec struct {
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=10
 	Size int32 `json:"size"`
+
+	// Quantity of instances
+	Exit       int32                         `json:"exit"`
+	Timeout    int32                         `json:"timeout"`
+	ConfigMaps []BasicConfigurationCondition `json:"configmaps,omitempty"`
+	Secrets    []BasicConfigurationCondition `json:"secrets,omitempty"`
+	Services   []BasicConfigurationCondition `json:"services,omitempty"`
+}
+
+// BasicConfigurationCondition general match rules
+type BasicConfigurationCondition struct {
+	ID         int               `json:"id,omitempty"`
+	Namespace  string            `json:"namespace"`
+	Name       string            `json:"name"`
+	APIVersion string            `json:"apiVersion,omitempty"`
+	Kind       string            `json:"kind,omitempty"`
+	Labels     map[string]string `json:"labels,omitempty"`
 }
 
 // WatcherStatus defines the observed state of Watcher

@@ -92,6 +92,9 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	return ctrl.Result{}, nil
 }
 
+func (r *WatcherReconciler) deleteWatcher(job *v1batch.Job, configMap *v1.ConfigMap) error {
+	return nil
+}
 func (r *WatcherReconciler) createWatcher(job *v1batch.Job, configMap *v1.ConfigMap) error {
 	return nil
 }
