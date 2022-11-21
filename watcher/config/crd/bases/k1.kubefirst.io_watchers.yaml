@@ -112,18 +112,11 @@ spec:
                   - namespace
                   type: object
                 type: array
-              size:
-                description: Quantity of instances
-                format: int32
-                maximum: 10
-                minimum: 1
-                type: integer
               timeout:
                 format: int32
                 type: integer
             required:
             - exit
-            - size
             - timeout
             type: object
           status:

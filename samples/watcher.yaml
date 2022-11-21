@@ -3,4 +3,16 @@ kind: Watcher
 metadata:
   name: watcher-sample-01
 spec:
-    size: 1
+    exit: 0
+    timeout: 300
+    configmaps:
+      - name: sample-cfg
+        namespace: default  
+        labels:
+          app: test
+    secrets:
+      - name: sample-secret
+        namespace: default    
+    services:
+      - name: sample-service
+        namespace: default  

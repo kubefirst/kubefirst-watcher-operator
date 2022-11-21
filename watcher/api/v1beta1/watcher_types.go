@@ -32,11 +32,6 @@ type WatcherSpec struct {
 	Foo string `json:"foo,omitempty"`
 
 	// Quantity of instances
-	// +kubebuilder:validation:Minimum=1
-	// +kubebuilder:validation:Maximum=10
-	Size int32 `json:"size"`
-
-	// Quantity of instances
 	Exit       int32                         `json:"exit"`
 	Timeout    int32                         `json:"timeout"`
 	ConfigMaps []BasicConfigurationCondition `json:"configmaps,omitempty"`
