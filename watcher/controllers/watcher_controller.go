@@ -129,6 +129,10 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return reconcile.Result{}, err
 	}
 	//Handle Updates:
+	if currentStateJob == nil || currentStateConfigMap == nil {
+		//nothing to be updates
+		return ctrl.Result{}, nil
+	}
 
 	if !reflect.DeepEqual(desiredConfigMap.Data, currentStateConfigMap.Data) || !reflect.DeepEqual(desiredJob.Spec, currentStateJob.Spec) {
 		r.deleteWatcher(req.Name, Namespace)
@@ -199,11 +203,23 @@ func (r *WatcherReconciler) getCurrentState(crd *k1v1beta1.Watcher) (*v1batch.Jo
 	return jobFound, configMapFound, nil
 }
 
+func createConfigWatcher(crd *k1v1beta1.Watcher) *k1v1beta1.WatcherConfig {
+	configWatcher := &k1v1beta1.WatcherConfig{
+		CrdName:      crd.Name,
+		CrdNamespace: crd.Namespace,
+		Kind:         crd.Kind,
+		APIVersion:   crd.APIVersion,
+		Group:        crd.GroupVersionKind().Group,
+	}
+	return configWatcher
+}
+
 func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, *v1.ConfigMap, error) {
 	jobName, configMapName := generateNames(crd.Name, Namespace)
 	watcherRules, _ := yaml.Marshal(crd.Spec)
+	watcherConfig, _ := yaml.Marshal(createConfigWatcher(crd))
 	log.Log.Info(fmt.Sprintf("Called: %s", watcherRules))
-	dataSample := map[string]string{"check.yaml": string(watcherRules)}
+	dataSample := map[string]string{"check.yaml": string(watcherRules), "owner.yaml": string(watcherConfig)}
 	//TODO: Improve logic to create ownership matching
 	labels := map[string]string{"source": crd.GetObjectKind().GroupVersionKind().GroupKind().String(), "instance": crd.Name}
 

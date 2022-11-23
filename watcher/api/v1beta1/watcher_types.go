@@ -39,6 +39,14 @@ type WatcherSpec struct {
 	Services   []BasicConfigurationCondition `json:"services,omitempty"`
 }
 
+type WatcherConfig struct {
+	CrdName      string `json:"crdname,omitempty"`
+	CrdNamespace string `json:"crdnamespace,omitempty"`
+	Kind         string `json:"kind,omitempty"`
+	APIVersion   string `json:"apiVersion,omitempty"`
+	Group        string `json:"group,omitempty"`
+}
+
 // BasicConfigurationCondition general match rules
 type BasicConfigurationCondition struct {
 	ID         int               `json:"id,omitempty"`
