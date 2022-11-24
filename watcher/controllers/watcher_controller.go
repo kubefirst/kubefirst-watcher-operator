@@ -66,8 +66,9 @@ const Namespace = "default"
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
 func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
+	eventType := EventUpdate
 	// TODO(user): your logic here
-	log.Log.Info(fmt.Sprintf("Called: %#v", req))
+	//log.Log.Info(fmt.Sprintf("Called: %#v", req))
 	log.Log.Info(fmt.Sprintf("Called: %#v", req.NamespacedName))
 
 	//Desired State
@@ -80,7 +81,10 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			// For additional cleanup logic use finalizers.
 			// CRD was removed (DELETE EVENT)
 			// How to remove the objects?
-			r.deleteWatcher(req.Name, Namespace)
+			r.deleteConfigMap(req.Name, Namespace)
+			r.deleteJob(req.Name, Namespace)
+			eventType = EventDelete
+			log.Log.Info(fmt.Sprintf("Event: %s =>  %#v", eventType, req.NamespacedName))
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
@@ -92,18 +96,15 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// "Create Again" the Object and Compare with existing one
 	// If not matchs it is a important update.
 	desiredJob, desiredConfigMap, err := createWatcherJob(instance)
-	log.Log.Info(fmt.Sprintf("Called: %#v", desiredJob))
-	log.Log.Info(fmt.Sprintf("Called: %#v", desiredConfigMap))
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
 	currentStateJob, currentStateConfigMap, err := r.getCurrentState(instance)
-	log.Log.Info(fmt.Sprintf("Called: %#v", currentStateJob))
-	log.Log.Info(fmt.Sprintf("Called: %#v", currentStateConfigMap))
 	if err != nil {
 		return reconcile.Result{}, err
 	}
+	checkJob(currentStateJob)
 	//Get Live Resources:
 	// ConfigMap
 	// Job
@@ -112,6 +113,10 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// if both match, do nothing.
 
 	//missing job, creating one
+	if currentStateJob == nil || currentStateConfigMap == nil {
+		eventType = EventCreate
+		log.Log.Info(fmt.Sprintf("Event: %s =>  %#v", eventType, req.NamespacedName))
+	}
 	if currentStateConfigMap == nil {
 		err = r.Create(context.TODO(), desiredConfigMap)
 		if err != nil {
@@ -124,32 +129,37 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			return reconcile.Result{}, err
 		}
 	}
-	currentStateJob, currentStateConfigMap, err = r.getCurrentState(instance)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
-	//Handle Updates:
-	if currentStateJob == nil || currentStateConfigMap == nil {
-		//nothing to be updates
-		return ctrl.Result{}, nil
+	if eventType == EventCreate {
+		return reconcile.Result{}, nil
 	}
 
-	if !reflect.DeepEqual(desiredConfigMap.Data, currentStateConfigMap.Data) || !reflect.DeepEqual(desiredJob.Spec, currentStateJob.Spec) {
-		r.deleteWatcher(req.Name, Namespace)
-		err = r.Create(context.TODO(), desiredConfigMap)
-		if err != nil {
-			return reconcile.Result{}, err
+	if eventType == EventUpdate && currentStateConfigMap != nil && currentStateJob != nil {
+		configMapChanged := false
+		if !reflect.DeepEqual(desiredConfigMap.Data, currentStateConfigMap.Data) {
+			r.deleteConfigMap(req.Name, Namespace)
+			err = r.Create(context.TODO(), desiredConfigMap)
+			configMapChanged = true
+			if err != nil {
+				return reconcile.Result{}, err
+			}
+
 		}
-		err = r.Create(context.TODO(), desiredJob)
-		if err != nil {
-			return reconcile.Result{}, err
+		if !reflect.DeepEqual(desiredJob.Spec, currentStateJob.Spec) || configMapChanged {
+			r.deleteJob(req.Name, Namespace)
+			err = r.Create(context.TODO(), desiredJob)
+			if err != nil {
+				return reconcile.Result{}, err
+			}
 		}
+		return reconcile.Result{}, nil
+	} else {
+		log.Log.Info(fmt.Sprintf("Unkown State: %#v", eventType))
 	}
-	return ctrl.Result{}, nil
+	return reconcile.Result{}, nil
 }
 
-func (r *WatcherReconciler) deleteWatcher(name string, namespace string) error {
-	jobName, configMapName := generateNames(name, namespace)
+func (r *WatcherReconciler) deleteConfigMap(name string, namespace string) error {
+	_, configMapName := generateNames(name, namespace)
 	configMap := &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      configMapName,
@@ -162,6 +172,10 @@ func (r *WatcherReconciler) deleteWatcher(name string, namespace string) error {
 		return err
 
 	}
+	return nil
+}
+func (r *WatcherReconciler) deleteJob(name string, namespace string) error {
+	jobName, _ := generateNames(name, namespace)
 	job := &v1batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      jobName,
@@ -169,7 +183,7 @@ func (r *WatcherReconciler) deleteWatcher(name string, namespace string) error {
 		},
 		Spec: v1batch.JobSpec{},
 	}
-	err = r.Delete(context.TODO(), job)
+	err := r.Delete(context.TODO(), job)
 	if err != nil {
 		log.Log.Info(fmt.Sprintf("Error deleting Found job %s/%s\n", Namespace, job))
 		return err
@@ -178,6 +192,13 @@ func (r *WatcherReconciler) deleteWatcher(name string, namespace string) error {
 
 	return nil
 }
+
+const (
+	EventCreate string = "Create"
+	EventUpdate string = "Update"
+	EventDelete string = "Delete"
+)
+
 func (r *WatcherReconciler) createWatcher(job *v1batch.Job, configMap *v1.ConfigMap) error {
 	return nil
 }
@@ -218,10 +239,12 @@ func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, *v1.ConfigMap, erro
 	jobName, configMapName := generateNames(crd.Name, Namespace)
 	watcherRules, _ := yaml.Marshal(crd.Spec)
 	watcherConfig, _ := yaml.Marshal(createConfigWatcher(crd))
-	log.Log.Info(fmt.Sprintf("Called: %s", watcherRules))
+	//log.Log.Info(fmt.Sprintf("Called: %s", watcherRules))
 	dataSample := map[string]string{"check.yaml": string(watcherRules), "owner.yaml": string(watcherConfig)}
 	//TODO: Improve logic to create ownership matching
 	labels := map[string]string{"source": crd.GetObjectKind().GroupVersionKind().GroupKind().String(), "instance": crd.Name}
+	//Adding the CRD labels, works, but argo-cd prune its as it is not defined on the git side.
+	//maps.Copy(labels, crd.Labels)
 
 	configMap := &v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -232,7 +255,7 @@ func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, *v1.ConfigMap, erro
 		Data: dataSample,
 	}
 	serviceAccount := ServiceAccount
-	var one int32
+	var one, five int32
 	volume := v1.Volume{
 		Name: "k1-ready-config",
 		VolumeSource: v1.VolumeSource{
@@ -245,13 +268,14 @@ func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, *v1.ConfigMap, erro
 	}
 	container := v1.Container{
 		Name:            "main",
-		Image:           "6zar/k1test:a8a2386",
+		Image:           "6zar/k1test:7868a4b",
 		ImagePullPolicy: v1.PullAlways,
 		Command:         []string{"/usr/local/bin/k1-watcher"},
 		Args:            []string{"watcher", "-c", "/k1-config/check.yaml", "-o", "/k1-config/owner.yaml"},
 		VolumeMounts:    []v1.VolumeMount{{Name: volume.Name, MountPath: "/k1-config"}},
 	}
 	one = int32(1)
+	five = int32(5)
 	job := &v1batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      jobName,
@@ -267,7 +291,7 @@ func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, *v1.ConfigMap, erro
 					Containers:         []v1.Container{container},
 				},
 			},
-			BackoffLimit: &one,
+			BackoffLimit: &five,
 			Completions:  &one,
 		},
 	}
@@ -285,4 +309,14 @@ func (r *WatcherReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k1v1beta1.Watcher{}).
 		Complete(r)
+}
+
+func checkJob(job *v1batch.Job) {
+	if job == nil {
+		log.Log.Info("Job is nil")
+	} else if reflect.DeepEqual(job, v1batch.Job{}) {
+		log.Log.Info("Job is blank:" + job.Name)
+	} else {
+		log.Log.Info("Job exist:" + job.Name)
+	}
 }
