@@ -15,7 +15,14 @@ spec:
     singular: watcher
   scope: Namespaced
   versions:
-  - name: v1beta1
+  - additionalPrinterColumns:
+    - jsonPath: .status.status
+      name: Status
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1beta1
     schema:
       openAPIV3Schema:
         description: Watcher is the Schema for the watchers API
@@ -62,10 +69,6 @@ spec:
                 description: Quantity of instances
                 format: int32
                 type: integer
-              foo:
-                description: Foo is an example field of Watcher. Edit watcher_types.go
-                  to remove/update
-                type: string
               secrets:
                 items:
                   description: BasicConfigurationCondition general match rules

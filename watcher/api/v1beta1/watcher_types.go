@@ -28,9 +28,6 @@ type WatcherSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of Watcher. Edit watcher_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
-
 	// Quantity of instances
 	Exit       int32                         `json:"exit"`
 	Timeout    int32                         `json:"timeout"`
@@ -64,9 +61,10 @@ type WatcherStatus struct {
 	Status string `json:"status"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Status",type=string,JSONPath=`.status.status`
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // Watcher is the Schema for the watchers API
 type Watcher struct {
 	metav1.TypeMeta   `json:",inline"`

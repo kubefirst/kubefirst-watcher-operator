@@ -268,10 +268,10 @@ func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, *v1.ConfigMap, erro
 	}
 	container := v1.Container{
 		Name:            "main",
-		Image:           "6zar/k1test:7868a4b",
+		Image:           "6zar/k1test:cf831de",
 		ImagePullPolicy: v1.PullAlways,
 		Command:         []string{"/usr/local/bin/k1-watcher"},
-		Args:            []string{"watcher", "-c", "/k1-config/check.yaml", "-o", "/k1-config/owner.yaml"},
+		Args:            []string{"watcher", "--crd-api-version", crd.APIVersion, "--crd-namespace", crd.Namespace, "--crd-instance", crd.Name},
 		VolumeMounts:    []v1.VolumeMount{{Name: volume.Name, MountPath: "/k1-config"}},
 	}
 	one = int32(1)
