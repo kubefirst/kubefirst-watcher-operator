@@ -26,12 +26,13 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	"github.com/k1tests/basic-controller/api/v1beta1"
 	k1v1beta1 "github.com/k1tests/basic-controller/api/v1beta1"
-	"gopkg.in/yaml.v2"
 	v1batch "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -81,7 +82,6 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			// For additional cleanup logic use finalizers.
 			// CRD was removed (DELETE EVENT)
 			// How to remove the objects?
-			r.deleteConfigMap(req.Name, Namespace)
 			r.deleteJob(req.Name, Namespace)
 			eventType = EventDelete
 			log.Log.Info(fmt.Sprintf("Event: %s =>  %#v", eventType, req.NamespacedName))
@@ -95,12 +95,12 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	//How to check if it is is an update?
 	// "Create Again" the Object and Compare with existing one
 	// If not matchs it is a important update.
-	desiredJob, desiredConfigMap, err := createWatcherJob(instance)
+	desiredJob, err := createWatcherJob(instance)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	currentStateJob, currentStateConfigMap, err := r.getCurrentState(instance)
+	currentStateJob, err := r.getCurrentState(instance)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -113,18 +113,17 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	// if both match, do nothing.
 
 	//missing job, creating one
-	if currentStateJob == nil || currentStateConfigMap == nil {
+	if currentStateJob == nil {
 		eventType = EventCreate
 		log.Log.Info(fmt.Sprintf("Event: %s =>  %#v", eventType, req.NamespacedName))
 	}
-	if currentStateConfigMap == nil {
-		err = r.Create(context.TODO(), desiredConfigMap)
+	if currentStateJob == nil {
+		err = r.Create(context.TODO(), desiredJob)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
-	}
-	if currentStateJob == nil {
-		err = r.Create(context.TODO(), desiredJob)
+		instance.Status.Status = "Started"
+		err = r.Status().Update(context.Background(), instance)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
@@ -133,20 +132,15 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return reconcile.Result{}, nil
 	}
 
-	if eventType == EventUpdate && currentStateConfigMap != nil && currentStateJob != nil {
-		configMapChanged := false
-		if !reflect.DeepEqual(desiredConfigMap.Data, currentStateConfigMap.Data) {
-			r.deleteConfigMap(req.Name, Namespace)
-			err = r.Create(context.TODO(), desiredConfigMap)
-			configMapChanged = true
+	if eventType == EventUpdate && currentStateJob != nil {
+		if !reflect.DeepEqual(desiredJob.Spec, currentStateJob.Spec) {
+			r.deleteJob(req.Name, Namespace)
+			err = r.Create(context.TODO(), desiredJob)
 			if err != nil {
 				return reconcile.Result{}, err
 			}
-
-		}
-		if !reflect.DeepEqual(desiredJob.Spec, currentStateJob.Spec) || configMapChanged {
-			r.deleteJob(req.Name, Namespace)
-			err = r.Create(context.TODO(), desiredJob)
+			instance.Status.Status = "Started"
+			err = r.Status().Update(context.Background(), instance)
 			if err != nil {
 				return reconcile.Result{}, err
 			}
@@ -158,22 +152,6 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	return reconcile.Result{}, nil
 }
 
-func (r *WatcherReconciler) deleteConfigMap(name string, namespace string) error {
-	_, configMapName := generateNames(name, namespace)
-	configMap := &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      configMapName,
-			Namespace: Namespace,
-		},
-	}
-	err := r.Delete(context.TODO(), configMap)
-	if err != nil {
-		log.Log.Info(fmt.Sprintf("Error deleting Found Configmap %s/%s\n", Namespace, configMapName))
-		return err
-
-	}
-	return nil
-}
 func (r *WatcherReconciler) deleteJob(name string, namespace string) error {
 	jobName, _ := generateNames(name, namespace)
 	job := &v1batch.Job{
@@ -199,80 +177,31 @@ const (
 	EventDelete string = "Delete"
 )
 
-func (r *WatcherReconciler) createWatcher(job *v1batch.Job, configMap *v1.ConfigMap) error {
-	return nil
-}
-
-func (r *WatcherReconciler) updateWatcher(job *v1batch.Job, configMap *v1.ConfigMap) error {
-	return nil
-}
-func (r *WatcherReconciler) getCurrentState(crd *k1v1beta1.Watcher) (*v1batch.Job, *v1.ConfigMap, error) {
-	jobName, configMapName := generateNames(crd.Name, Namespace)
-	configMapFound := &v1.ConfigMap{}
+func (r *WatcherReconciler) getCurrentState(crd *k1v1beta1.Watcher) (*v1batch.Job, error) {
+	jobName, _ := generateNames(crd.Name, Namespace)
 	jobFound := &v1batch.Job{}
 
-	err := r.Get(context.TODO(), types.NamespacedName{Name: configMapName, Namespace: Namespace}, configMapFound)
-	if err != nil && errors.IsNotFound(err) {
-		log.Log.Info(fmt.Sprintf("Not Found Configmap %s/%s\n", Namespace, configMapName))
-		configMapFound = nil
-	}
-	err = r.Get(context.TODO(), types.NamespacedName{Name: jobName, Namespace: Namespace}, jobFound)
+	err := r.Get(context.TODO(), types.NamespacedName{Name: jobName, Namespace: Namespace}, jobFound)
 	if err != nil && errors.IsNotFound(err) {
 		log.Log.Info(fmt.Sprintf("Not Found Job %s/%s\n", Namespace, jobName))
 		jobFound = nil
 	}
-	return jobFound, configMapFound, nil
+	return jobFound, nil
 }
 
-func createConfigWatcher(crd *k1v1beta1.Watcher) *k1v1beta1.WatcherConfig {
-	configWatcher := &k1v1beta1.WatcherConfig{
-		CrdName:      crd.Name,
-		CrdNamespace: crd.Namespace,
-		Kind:         crd.Kind,
-		APIVersion:   crd.APIVersion,
-		Group:        crd.GroupVersionKind().Group,
-	}
-	return configWatcher
-}
-
-func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, *v1.ConfigMap, error) {
-	jobName, configMapName := generateNames(crd.Name, Namespace)
-	watcherRules, _ := yaml.Marshal(crd.Spec)
-	watcherConfig, _ := yaml.Marshal(createConfigWatcher(crd))
-	//log.Log.Info(fmt.Sprintf("Called: %s", watcherRules))
-	dataSample := map[string]string{"check.yaml": string(watcherRules), "owner.yaml": string(watcherConfig)}
-	//TODO: Improve logic to create ownership matching
+func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, error) {
+	jobName, _ := generateNames(crd.Name, Namespace)
 	labels := map[string]string{"source": crd.GetObjectKind().GroupVersionKind().GroupKind().String(), "instance": crd.Name}
 	//Adding the CRD labels, works, but argo-cd prune its as it is not defined on the git side.
 	//maps.Copy(labels, crd.Labels)
-
-	configMap := &v1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      configMapName,
-			Namespace: Namespace,
-			Labels:    labels,
-		},
-		Data: dataSample,
-	}
 	serviceAccount := ServiceAccount
 	var one, five int32
-	volume := v1.Volume{
-		Name: "k1-ready-config",
-		VolumeSource: v1.VolumeSource{
-			ConfigMap: &v1.ConfigMapVolumeSource{
-				LocalObjectReference: v1.LocalObjectReference{
-					Name: configMap.ObjectMeta.Name,
-				},
-			},
-		},
-	}
 	container := v1.Container{
 		Name:            "main",
 		Image:           "6zar/k1test:cf831de",
 		ImagePullPolicy: v1.PullAlways,
 		Command:         []string{"/usr/local/bin/k1-watcher"},
 		Args:            []string{"watcher", "--crd-api-version", crd.APIVersion, "--crd-namespace", crd.Namespace, "--crd-instance", crd.Name},
-		VolumeMounts:    []v1.VolumeMount{{Name: volume.Name, MountPath: "/k1-config"}},
 	}
 	one = int32(1)
 	five = int32(5)
@@ -287,7 +216,6 @@ func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, *v1.ConfigMap, erro
 				Spec: v1.PodSpec{
 					ServiceAccountName: serviceAccount,
 					RestartPolicy:      v1.RestartPolicyNever,
-					Volumes:            []v1.Volume{volume},
 					Containers:         []v1.Container{container},
 				},
 			},
@@ -295,7 +223,7 @@ func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, *v1.ConfigMap, erro
 			Completions:  &one,
 		},
 	}
-	return job, configMap, nil
+	return job, nil
 }
 
 func generateNames(name string, namespace string) (string, string) {
@@ -308,6 +236,23 @@ func generateNames(name string, namespace string) (string, string) {
 func (r *WatcherReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k1v1beta1.Watcher{}).
+		WithEventFilter(predicate.Funcs{
+			UpdateFunc: func(e event.UpdateEvent) bool {
+				oldGeneration := e.ObjectOld.GetGeneration()
+				newGeneration := e.ObjectNew.GetGeneration()
+				// Generation is only updated on spec changes (also on deletion),
+				// not metadata or status
+				// Filter out events where the generation hasn't changed to
+				// avoid being triggered by status updates
+				return oldGeneration != newGeneration
+			},
+			DeleteFunc: func(e event.DeleteEvent) bool {
+				// The reconciler adds a finalizer so we perform clean-up
+				// when the delete timestamp is added
+				// Suppress Delete events to avoid filtering them out in the Reconcile function
+				return true
+			},
+		}).
 		Complete(r)
 }
 
