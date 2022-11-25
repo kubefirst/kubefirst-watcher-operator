@@ -1,0 +1,18 @@
+apiVersion: k1.kubefirst.io/v1beta1
+kind: Watcher
+metadata:
+  name: watcher-sample-01
+spec:
+    exit: 0
+    timeout: 300
+    configmaps:
+      - name: sample-cfg
+        namespace: default  
+        labels:
+          app: test
+    secrets:
+      - name: sample-secret
+        namespace: default    
+    services:
+      - name: sample-service
+        namespace: default  
