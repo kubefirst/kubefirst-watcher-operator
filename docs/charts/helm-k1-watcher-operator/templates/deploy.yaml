@@ -81,6 +81,31 @@ spec:
                 description: Quantity of instances
                 format: int32
                 type: integer
+              pods:
+                items:
+                  description: PodCondition pod matching rules
+                  properties:
+                    apiVersion:
+                      type: string
+                    id:
+                      type: integer
+                    kind:
+                      type: string
+                    labels:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                    phase:
+                      type: string
+                  required:
+                  - name
+                  - namespace
+                  type: object
+                type: array
               secrets:
                 items:
                   description: BasicConfigurationCondition general match rules
@@ -218,6 +243,18 @@ metadata:
   creationTimestamp: null
   name: watcher-manager-role
 rules:
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - k1.kubefirst.io
   resources:
@@ -441,7 +478,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: {{ .Values.image | quote }}
+        image:  {{ .Values.image | quote }}
         livenessProbe:
           httpGet:
             path: /healthz
