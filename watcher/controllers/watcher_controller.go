@@ -90,11 +90,12 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
-	//Other Events:
-	//Created and Updated
-	//How to check if it is is an update?
-	// "Create Again" the Object and Compare with existing one
-	// If not matchs it is a important update.
+	// Check if Job was already created:
+	if instance.Status.Instanced {
+		// nothing to be done
+		return reconcile.Result{}, nil
+	}
+
 	desiredJob, err := createWatcherJob(instance)
 	if err != nil {
 		return reconcile.Result{}, err
@@ -105,12 +106,6 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return reconcile.Result{}, err
 	}
 	checkJob(currentStateJob)
-	//Get Live Resources:
-	// ConfigMap
-	// Job
-	// if any is missing, destroy and create again.
-	// if both are missing, just create.
-	// if both match, do nothing.
 
 	//missing job, creating one
 	if currentStateJob == nil {
@@ -123,12 +118,11 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			return reconcile.Result{}, err
 		}
 		instance.Status.Status = "Started"
+		instance.Status.Instanced = true
 		err = r.Status().Update(context.Background(), instance)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
-	}
-	if eventType == EventCreate {
 		return reconcile.Result{}, nil
 	}
 
@@ -140,6 +134,7 @@ func (r *WatcherReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 				return reconcile.Result{}, err
 			}
 			instance.Status.Status = "Started"
+			instance.Status.Instanced = true
 			err = r.Status().Update(context.Background(), instance)
 			if err != nil {
 				return reconcile.Result{}, err
@@ -167,7 +162,6 @@ func (r *WatcherReconciler) deleteJob(name string, namespace string) error {
 		return err
 
 	}
-
 	return nil
 }
 
