@@ -3,7 +3,17 @@ entries:
   helm-k1-watcher-operator:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-11-28T16:25:23.13096997Z"
+    created: "2022-11-28T16:37:00.308080641Z"
+    description: A Helm chart for Kubernetes
+    digest: 7553666d9d03678e45fcbab3ed6210c43b557e882de7f14e5d5f7dbf36445058
+    name: helm-k1-watcher-operator
+    type: application
+    urls:
+    - https://kubefirst.github.io/kubefirst-watcher-operator/helm-k1-watcher-operator-0.4.0.tgz
+    version: 0.4.0
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-11-28T16:37:00.306254944Z"
     description: A Helm chart for Kubernetes
     digest: 30034b90cf9c789b39ce2e6317476a0aa222a452339ecef06db7b17207b9e254
     name: helm-k1-watcher-operator
@@ -13,7 +23,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-11-28T16:25:23.129351681Z"
+    created: "2022-11-28T16:37:00.304805605Z"
     description: A Helm chart for Kubernetes
     digest: e8711a5b17eb1e38d64299d3df58b4d6542cf7098d32c7a4b873b095fa446cee
     name: helm-k1-watcher-operator
@@ -23,7 +33,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-11-28T16:25:23.128105729Z"
+    created: "2022-11-28T16:37:00.30324383Z"
     description: A Helm chart for Kubernetes
     digest: 2993901c376168bc5bb9d1311a2ac9e2b1f2d644b6f9d22bfe034ff509bf3eed
     name: helm-k1-watcher-operator
@@ -31,4 +41,4 @@ entries:
     urls:
     - https://kubefirst.github.io/kubefirst-watcher-operator/helm-k1-watcher-operator-0.1.0.tgz
     version: 0.1.0
-generated: "2022-11-28T16:25:23.126618221Z"
+generated: "2022-11-28T16:37:00.301570087Z"
