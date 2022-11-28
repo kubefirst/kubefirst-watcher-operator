@@ -62,3 +62,34 @@ kubectl get crd
 ```
 
 
+
+# Argo-cd 
+
+In case, the cluster has argocd we can wuse this folowing `patch` to make it to understand state of this new CRD: 
+```lua
+hs = {}
+if obj.status ~= nil then
+  if obj.status.status ~= nil then
+    if obj.status.status == "Satisfied" then
+        hs.status = "Healthy"
+        hs.message = obj.status.status
+        return hs
+     end
+     if obj.status.status == "Timeout" then
+        hs.status = "Degraded"
+        hs.message = obj.status.status
+        return hs
+     end
+  end
+end
+hs.status = "Progressing"
+hs.message = "Waiting for Watcher
+return hs
+```
+
+```bash 
+kubectl patch configmap/argocd-cm \
+  -n argocd \
+  --type merge \
+  -p '{"data":{"resource.customizations.health.k1.kubefirst.io_Watcher":"hs = {}\nif obj.status ~= nil then\n  if obj.status.status ~= nil then\n    if obj.status.status == \"Satisfied\" then\n        hs.status = \"Healthy\"\n        hs.message = obj.status.status\n        return hs\n     end\n     if obj.status.status == \"Timeout\" then\n        hs.status = \"Degraded\"\n        hs.message = obj.status.status\n        return hs\n     end\n  end\nend\nhs.status = \"Progressing\"\nhs.message = \"Waiting for Watcher\"\nreturn hs"} }'
+```
