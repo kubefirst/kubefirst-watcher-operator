@@ -125,12 +125,15 @@ spec:
           status:
             description: WatcherStatus defines the observed state of Watcher
             properties:
+              instanced:
+                type: boolean
               status:
                 description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                   of cluster Important: Run "make" to regenerate code after modifying
                   this file'
                 type: string
             required:
+            - instanced
             - status
             type: object
         type: object

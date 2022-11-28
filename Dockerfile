@@ -12,6 +12,7 @@ ARG KUBECTL_VERSION=v1.21.3
 ARG OS=linux
 ARG ARCH=amd64
 ARG OPERATOR_SDK_DL_URL=https://github.com/operator-framework/operator-sdk/releases/download
+WORKDIR /root
 
 RUN apt-get update && \
     apt-get install -y unzip curl jq vim unzip less \
@@ -44,6 +45,10 @@ RUN curl -LO https://s3.us-west-2.amazonaws.com/amazon-eks/1.21.2/2021-07-05/bin
 #https://book.kubebuilder.io/quick-start.html#installation
 RUN curl -L -o kubebuilder https://go.kubebuilder.io/dl/latest/${OS}/${ARCH} \
     && chmod +x kubebuilder && mv kubebuilder /usr/local/bin/
+
+RUN curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash \
+    && ls \    
+    && mv /root/kustomize /usr/local/bin/    
 
 # From Operator SDK docs
 ENV GO111MODULE=on
