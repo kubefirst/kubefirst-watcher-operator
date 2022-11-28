@@ -34,14 +34,7 @@ type WatcherSpec struct {
 	ConfigMaps []BasicConfigurationCondition `json:"configmaps,omitempty"`
 	Secrets    []BasicConfigurationCondition `json:"secrets,omitempty"`
 	Services   []BasicConfigurationCondition `json:"services,omitempty"`
-}
-
-type WatcherConfig struct {
-	CrdName      string `json:"crdname,omitempty"`
-	CrdNamespace string `json:"crdnamespace,omitempty"`
-	Kind         string `json:"kind,omitempty"`
-	APIVersion   string `json:"apiVersion,omitempty"`
-	Group        string `json:"group,omitempty"`
+	Pods       []PodCondition                `json:"pods,omitempty"`
 }
 
 // BasicConfigurationCondition general match rules
@@ -49,6 +42,17 @@ type BasicConfigurationCondition struct {
 	ID         int               `json:"id,omitempty"`
 	Namespace  string            `json:"namespace"`
 	Name       string            `json:"name"`
+	APIVersion string            `json:"apiVersion,omitempty"`
+	Kind       string            `json:"kind,omitempty"`
+	Labels     map[string]string `json:"labels,omitempty"`
+}
+
+// PodCondition pod matching rules
+type PodCondition struct {
+	ID         int               `json:"id,omitempty"`
+	Namespace  string            `json:"namespace"`
+	Name       string            `json:"name"`
+	Phase      string            `json:"phase,omitempty"`
 	APIVersion string            `json:"apiVersion,omitempty"`
 	Kind       string            `json:"kind,omitempty"`
 	Labels     map[string]string `json:"labels,omitempty"`

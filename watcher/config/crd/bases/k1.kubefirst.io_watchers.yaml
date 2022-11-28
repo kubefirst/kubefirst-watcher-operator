@@ -69,6 +69,31 @@ spec:
                 description: Quantity of instances
                 format: int32
                 type: integer
+              pods:
+                items:
+                  description: PodCondition pod matching rules
+                  properties:
+                    apiVersion:
+                      type: string
+                    id:
+                      type: integer
+                    kind:
+                      type: string
+                    labels:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                    phase:
+                      type: string
+                  required:
+                  - name
+                  - namespace
+                  type: object
+                type: array
               secrets:
                 items:
                   description: BasicConfigurationCondition general match rules

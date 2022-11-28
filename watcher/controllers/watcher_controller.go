@@ -53,6 +53,7 @@ const Namespace = "default"
 //const Namespace = "k1-watcher"
 
 //+kubebuilder:rbac:groups=k1.kubefirst.io,resources=watchers,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k1.kubefirst.io,resources=watchers/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=k1.kubefirst.io,resources=watchers/finalizers,verbs=update
 
