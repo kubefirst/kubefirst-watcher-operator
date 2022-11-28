@@ -441,7 +441,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: controller:latest
+        image: {{ .Values.image | quote }}
         livenessProbe:
           httpGet:
             path: /healthz
