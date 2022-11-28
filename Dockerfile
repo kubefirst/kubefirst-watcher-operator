@@ -18,6 +18,26 @@ RUN apt-get update && \
     apt-get install -y unzip curl jq vim unzip less \
      && rm -rf /var/lib/apt/lists/* 
 
+RUN \
+    apt-get update && apt-get install -y \
+    curl jq vim unzip less \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release \
+    passwd  \ 
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /etc/apt/keyrings   && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+    $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    &&  apt-get update \
+    && apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin \
+    && rm -rf /var/lib/apt/lists/*
+
+
 # Operator SDK says it needs Kubectl, not  yet sure why though
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/$(uname -s | awk '{print tolower($0)}' )/amd64/kubectl \
     && chmod +x ./kubectl \
