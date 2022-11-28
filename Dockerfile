@@ -50,6 +50,10 @@ RUN curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/
     && ls \    
     && mv /root/kustomize /usr/local/bin/    
 
+RUN  curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 \
+    &&  chmod 700 get_helm.sh \
+    && ./get_helm.sh
+
 # From Operator SDK docs
 ENV GO111MODULE=on
 
