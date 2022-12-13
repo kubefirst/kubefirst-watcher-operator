@@ -93,3 +93,40 @@ kubectl patch configmap/argocd-cm \
   --type merge \
   -p '{"data":{"resource.customizations.health.k1.kubefirst.io_Watcher":"hs = {}\nif obj.status ~= nil then\n  if obj.status.status ~= nil then\n    if obj.status.status == \"Satisfied\" then\n        hs.status = \"Healthy\"\n        hs.message = obj.status.status\n        return hs\n     end\n     if obj.status.status == \"Timeout\" then\n        hs.status = \"Degraded\"\n        hs.message = obj.status.status\n        return hs\n     end\n  end\nend\nhs.status = \"Progressing\"\nhs.message = \"Waiting for Watcher\"\nreturn hs"} }'
 ```
+
+
+# How to install the watcher on your argo installation 
+
+```yaml 
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: k1-watcher
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec: 
+  project: default
+  source:
+    repoURL: 'https://kubefirst.github.io/charts'
+    targetRevision: 0.4.0
+    helm:
+      valueFiles:
+        - values.yaml
+    chart: helm-k1-watcher-operator
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: watcher-system
+  syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+        - CreateNamespace=true
+      retry:
+        limit: 5
+        backoff:
+          duration: 5s
+          maxDuration: 5m0s
+          factor: 2
+```
