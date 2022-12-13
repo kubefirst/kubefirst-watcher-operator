@@ -111,8 +111,8 @@ spec:
     repoURL: 'https://kubefirst.github.io/charts'
     targetRevision: 0.4.0
     helm:
-      valueFiles:
-        - values.yaml
+      values: |-
+        image: 6zar/k1-watcher-contoller:latest
     chart: helm-k1-watcher-operator
   destination:
     server: 'https://kubernetes.default.svc'
