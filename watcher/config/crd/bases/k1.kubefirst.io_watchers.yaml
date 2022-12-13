@@ -69,6 +69,43 @@ spec:
                 description: Quantity of instances
                 format: int32
                 type: integer
+              jobs:
+                items:
+                  description: JobCondition pod matching rules
+                  properties:
+                    active:
+                      description: The number of pending and running pods.
+                      format: int32
+                      type: integer
+                    apiVersion:
+                      type: string
+                    failed:
+                      description: The number of pods which reached phase Failed.
+                      format: int32
+                      type: integer
+                    id:
+                      type: integer
+                    kind:
+                      type: string
+                    labels:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                    phase:
+                      type: string
+                    succeeded:
+                      description: The number of pods which reached phase Succeeded.
+                      format: int32
+                      type: integer
+                  required:
+                  - name
+                  - namespace
+                  type: object
+                type: array
               pods:
                 items:
                   description: PodCondition pod matching rules

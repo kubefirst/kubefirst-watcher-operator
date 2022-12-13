@@ -3,9 +3,19 @@ entries:
   helm-k1-watcher-operator:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-11-28T16:37:00.308080641Z"
+    created: "2022-12-13T23:31:34.881974697Z"
     description: A Helm chart for Kubernetes
-    digest: 7553666d9d03678e45fcbab3ed6210c43b557e882de7f14e5d5f7dbf36445058
+    digest: ce969d6c5f9574bcd757fa49ef146c6889268668d9b77af7fb2a72ee7a1dec5b
+    name: helm-k1-watcher-operator
+    type: application
+    urls:
+    - https://kubefirst.github.io/kubefirst-watcher-operator/helm-k1-watcher-operator-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2022-12-13T23:31:34.880201877Z"
+    description: A Helm chart for Kubernetes
+    digest: c2cdc2902c94484ccc082d3ef23e45d79930db6298d4475a8475d00001ffa64d
     name: helm-k1-watcher-operator
     type: application
     urls:
@@ -13,7 +23,7 @@ entries:
     version: 0.4.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-11-28T16:37:00.306254944Z"
+    created: "2022-12-13T23:31:34.878319513Z"
     description: A Helm chart for Kubernetes
     digest: 30034b90cf9c789b39ce2e6317476a0aa222a452339ecef06db7b17207b9e254
     name: helm-k1-watcher-operator
@@ -23,7 +33,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-11-28T16:37:00.304805605Z"
+    created: "2022-12-13T23:31:34.876906051Z"
     description: A Helm chart for Kubernetes
     digest: e8711a5b17eb1e38d64299d3df58b4d6542cf7098d32c7a4b873b095fa446cee
     name: helm-k1-watcher-operator
@@ -33,7 +43,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-11-28T16:37:00.30324383Z"
+    created: "2022-12-13T23:31:34.874890159Z"
     description: A Helm chart for Kubernetes
     digest: 2993901c376168bc5bb9d1311a2ac9e2b1f2d644b6f9d22bfe034ff509bf3eed
     name: helm-k1-watcher-operator
@@ -41,4 +51,4 @@ entries:
     urls:
     - https://kubefirst.github.io/kubefirst-watcher-operator/helm-k1-watcher-operator-0.1.0.tgz
     version: 0.1.0
-generated: "2022-11-28T16:37:00.301570087Z"
+generated: "2022-12-13T23:31:34.872382547Z"

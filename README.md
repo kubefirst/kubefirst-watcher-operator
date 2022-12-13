@@ -129,4 +129,31 @@ spec:
           duration: 5s
           maxDuration: 5m0s
           factor: 2
+---
+# Creates the argo annotation for CRD
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: add-kubewatcher-argocd
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  template:
+    spec:
+      serviceAccountName: argocd-server
+      containers:
+      - name: c
+        image: portainer/kubectl-shell:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          kubectl patch configmap/argocd-cm \
+            -n argocd \
+            --type merge \
+            -p '{"data":{"resource.customizations.health.k1.kubefirst.io_Watcher":"hs = {}\nif obj.status ~= nil then\n  if obj.status.status ~= nil then\n    if obj.status.status == \"Satisfied\" then\n        hs.status = \"Healthy\"\n        hs.message = obj.status.status\n        return hs\n     end\n     if obj.status.status == \"Timeout\" then\n        hs.status = \"Degraded\"\n        hs.message = obj.status.status\n        return hs\n     end\n  end\nend\nhs.status = \"Progressing\"\nhs.message = \"Waiting for Watcher\"\nreturn hs"} }'
+          sleep 10
+      restartPolicy: Never
+  backoffLimit: 1          
 ```
