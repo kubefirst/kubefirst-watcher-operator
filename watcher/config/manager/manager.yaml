@@ -72,6 +72,9 @@ spec:
         - --leader-elect
         image: controller:latest
         name: manager
+        env: 
+        - name: JOB_IMAGE
+          value: "6zar/k1test:f44725a"          
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

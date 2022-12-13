@@ -35,6 +35,7 @@ type WatcherSpec struct {
 	Secrets    []BasicConfigurationCondition `json:"secrets,omitempty"`
 	Services   []BasicConfigurationCondition `json:"services,omitempty"`
 	Pods       []PodCondition                `json:"pods,omitempty"`
+	Jobs       []JobCondition                `json:"jobs,omitempty"`
 }
 
 // BasicConfigurationCondition general match rules
@@ -56,6 +57,28 @@ type PodCondition struct {
 	APIVersion string            `json:"apiVersion,omitempty"`
 	Kind       string            `json:"kind,omitempty"`
 	Labels     map[string]string `json:"labels,omitempty"`
+}
+
+// JobCondition pod matching rules
+type JobCondition struct {
+	ID         int               `json:"id,omitempty"`
+	Namespace  string            `json:"namespace"`
+	Name       string            `json:"name"`
+	Phase      string            `json:"phase,omitempty"`
+	APIVersion string            `json:"apiVersion,omitempty"`
+	Kind       string            `json:"kind,omitempty"`
+	Labels     map[string]string `json:"labels,omitempty"`
+	// The number of pending and running pods.
+	// +optional
+	Active int32 `json:"active,omitempty"`
+
+	// The number of pods which reached phase Succeeded.
+	// +optional
+	Succeeded int32 `json:"succeeded,omitempty"`
+
+	// The number of pods which reached phase Failed.
+	// +optional
+	Failed int32 `json:"failed,omitempty"`
 }
 
 // WatcherStatus defines the observed state of Watcher

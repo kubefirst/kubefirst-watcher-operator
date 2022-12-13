@@ -1,2 +1,7 @@
 resources:
 - manager.yaml
+
+# images:
+#  - name: controller:latest
+#    newName: my.docker.registry.com/my-project/my-app
+#    newTag: test

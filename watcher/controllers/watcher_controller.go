@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"os"
 	"reflect"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -185,6 +186,8 @@ func (r *WatcherReconciler) getCurrentState(crd *k1v1beta1.Watcher) (*v1batch.Jo
 }
 
 func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, error) {
+	image := os.Getenv("JOB_IMAGE")
+	log.Log.Info(fmt.Sprintf("Job Image:  %s", image))
 	jobName, _ := generateNames(crd.Name, Namespace)
 	labels := map[string]string{"source": crd.GetObjectKind().GroupVersionKind().GroupKind().String(), "instance": crd.Name}
 	//Adding the CRD labels, works, but argo-cd prune its as it is not defined on the git side.
@@ -193,9 +196,9 @@ func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, error) {
 	var one, five int32
 	container := v1.Container{
 		Name:            "main",
-		Image:           "6zar/k1test:cf831de",
+		Image:           image,
 		ImagePullPolicy: v1.PullAlways,
-		Command:         []string{"/usr/local/bin/k1-watcher"},
+		Command:         []string{"/usr/local/bin/kubefirst-watcher"},
 		Args:            []string{"watcher", "--crd-api-version", crd.APIVersion, "--crd-namespace", crd.Namespace, "--crd-instance", crd.Name},
 	}
 	one = int32(1)
