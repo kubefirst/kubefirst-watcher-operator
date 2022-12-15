@@ -6,4 +6,4 @@ replicaCount: 1
 
 image: 6zar/k1-watcher-contoller:latest
 job:  
-  image: 6zar/k1test:f44725a
+  image: 6zar/k1test:f344181

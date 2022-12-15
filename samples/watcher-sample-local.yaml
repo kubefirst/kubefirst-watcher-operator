@@ -1,0 +1,25 @@
+apiVersion: k1.kubefirst.io/v1beta1
+kind: Watcher
+metadata:
+  name: watcher-local-check
+spec:
+    exit: 0
+    timeout: 60
+    configmaps:
+      - name: argocd-cm
+        namespace: argocd  
+    services:
+      - name: atlantis
+        namespace: atlantis
+    secrets:
+      - name: atlantis-secrets
+        namespace: atlantis
+    pods:
+      - name: atlantis-0
+        namespace: atlantis
+        phase: Running
+    jobs:
+      - name: add-kubewatcher-argocd
+        namespace: argocd
+        succeeded: 1
+
