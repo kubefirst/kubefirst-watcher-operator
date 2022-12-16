@@ -157,3 +157,52 @@ spec:
       restartPolicy: Never
   backoffLimit: 1          
 ```
+
+
+# Test this watcher with Kubefirst Local
+
+Use [kuebfirst](https://github.com/kubefirst/kubefirst) to have all gitops env ready for testing:
+```bash 
+./kubefirst local --gitops-branch main --skip-metaphor
+```
+Once all is done:
+- Add to your github user repo `gitops` at `/registry/k1-demo.yaml`: 
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: watcher-sample
+spec:
+  generators:
+  - list:
+      elements:
+        - cluster: sample
+          url: https://kubernetes.default.svc
+          env: k1
+  template:
+    metadata:
+      name: 'k1-watcher-demo'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/6za/k1-watcher-demo.git
+        targetRevision: HEAD
+        path: watcher
+      destination:
+        server: '{{url}}'
+        namespace: watcher-system
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            maxDuration: 5m0s
+            factor: 2   
+```
+
+This will unfold a set of applications using the watcher and install the watcher for you. 
