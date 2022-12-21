@@ -1,4 +1,4 @@
-module github.com/k1tests/basic-controller
+module github.com/kubefirst/kubefirst-watcher-operator/watcher
 
 go 1.19
 
