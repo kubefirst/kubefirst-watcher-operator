@@ -1,4 +1,4 @@
-module github.com/kubefirst/kubefirst-watcher-operator/watcher
+module github.com/kubefirst/kubefirst-watcher-operator
 
 go 1.19
 
