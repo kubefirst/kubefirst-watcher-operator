@@ -32,8 +32,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/kubefirst/kubefirst-watcher-operator/watcher/api/v1beta1"
-	k1v1beta1 "github.com/kubefirst/kubefirst-watcher-operator/watcher/api/v1beta1"
+	"github.com/kubefirst/kubefirst-watcher-operator/api/v1beta1"
+	k1v1beta1 "github.com/kubefirst/kubefirst-watcher-operator/api/v1beta1"
 	v1batch "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
