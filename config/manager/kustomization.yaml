@@ -1,7 +1,7 @@
 resources:
 - manager.yaml
 
-# images:
-#  - name: controller:latest
-#    newName: my.docker.registry.com/my-project/my-app
-#    newTag: test
+images:
+  - name: controller:latest
+    newName: 6zar/k1-watcher-contoller
+    newTag: latest
