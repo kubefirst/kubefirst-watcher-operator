@@ -29,13 +29,16 @@ type WatcherSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Quantity of instances
-	Exit       int32                         `json:"exit"`
-	Timeout    int32                         `json:"timeout"`
-	ConfigMaps []BasicConfigurationCondition `json:"configmaps,omitempty"`
-	Secrets    []BasicConfigurationCondition `json:"secrets,omitempty"`
-	Services   []BasicConfigurationCondition `json:"services,omitempty"`
-	Pods       []PodCondition                `json:"pods,omitempty"`
-	Jobs       []JobCondition                `json:"jobs,omitempty"`
+	Exit         int32                         `json:"exit"`
+	Timeout      int32                         `json:"timeout"`
+	ConfigMaps   []BasicConfigurationCondition `json:"configmaps,omitempty"`
+	Secrets      []BasicConfigurationCondition `json:"secrets,omitempty"`
+	Services     []BasicConfigurationCondition `json:"services,omitempty"`
+	Pods         []PodCondition                `json:"pods,omitempty"`
+	Jobs         []JobCondition                `json:"jobs,omitempty"`
+	Watchers     []WatcherCondition            `json:"watchers,omitempty"`
+	Deployments  []DeploymentCondition         `json:"deployments,omitempty"`
+	StatefulSets []StatefulSetCondition        `json:"statefulSets,omitempty"`
 }
 
 // BasicConfigurationCondition general match rules
@@ -79,6 +82,47 @@ type JobCondition struct {
 	// The number of pods which reached phase Failed.
 	// +optional
 	Failed int32 `json:"failed,omitempty"`
+}
+
+//WatcherCondition watcher matching rules
+type WatcherCondition struct {
+	ID        int               `json:"id,omitempty"`
+	Namespace string            `json:"namespace"`
+	Name      string            `json:"name"`
+	Labels    map[string]string `json:"labels,omitempty"`
+	// Condition of the Watcher
+	// +optional
+	Status string `json:"status,omitempty"`
+}
+
+//DeploymentCondition deployment matching rules
+type DeploymentCondition struct {
+	ID        int               `json:"id,omitempty"`
+	Namespace string            `json:"namespace"`
+	Name      string            `json:"name"`
+	Labels    map[string]string `json:"labels,omitempty"`
+	// The number of running pods.
+	// +optional
+	Replicas int32 `json:"replicas,omitempty"`
+
+	//Custom logic of been ready
+	// +optional
+	Ready bool `json:"ready,omitempty"`
+}
+
+//StatefulSetCondition deployment matching rules
+type StatefulSetCondition struct {
+	ID        int               `json:"id,omitempty"`
+	Namespace string            `json:"namespace"`
+	Name      string            `json:"name"`
+	Labels    map[string]string `json:"labels,omitempty"`
+	// The number of running pods.
+	// +optional
+	Replicas int32 `json:"replicas,omitempty"`
+
+	//Custom logic of been ready
+	// +optional
+	Ready bool `json:"ready,omitempty"`
 }
 
 // WatcherStatus defines the observed state of Watcher
