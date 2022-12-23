@@ -107,7 +107,7 @@ type DeploymentCondition struct {
 
 	//Custom logic of been ready
 	// +optional
-	// +kubebuilder:validation:Enum=true,True,TRUE,false,False,FALSE
+	// +kubebuilder:validation:Enum=true;True;TRUE;false;False;FALSE
 	Ready string `json:"ready,omitempty"`
 }
 
@@ -123,7 +123,7 @@ type StatefulSetCondition struct {
 
 	//Custom logic of been ready
 	// +optional
-	// +kubebuilder:validation:Enum=true,True,TRUE,false,False,FALSE
+	// +kubebuilder:validation:Enum=true;True;TRUE;false;False;FALSE
 	Ready string `json:"ready,omitempty"`
 }
 

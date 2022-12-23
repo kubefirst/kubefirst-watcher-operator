@@ -65,6 +65,39 @@ spec:
                   - namespace
                   type: object
                 type: array
+              deployments:
+                items:
+                  description: DeploymentCondition deployment matching rules
+                  properties:
+                    id:
+                      type: integer
+                    labels:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                    ready:
+                      description: Custom logic of been ready
+                      enum:
+                      - true
+                      - "True"
+                      - "TRUE"
+                      - false
+                      - "False"
+                      - "FALSE"
+                      type: string
+                    replicas:
+                      description: The number of running pods.
+                      format: int32
+                      type: integer
+                  required:
+                  - name
+                  - namespace
+                  type: object
+                type: array
               exit:
                 description: Quantity of instances
                 format: int32
@@ -177,9 +210,64 @@ spec:
                   - namespace
                   type: object
                 type: array
+              statefulSets:
+                items:
+                  description: StatefulSetCondition deployment matching rules
+                  properties:
+                    id:
+                      type: integer
+                    labels:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                    ready:
+                      description: Custom logic of been ready
+                      enum:
+                      - true
+                      - "True"
+                      - "TRUE"
+                      - false
+                      - "False"
+                      - "FALSE"
+                      type: string
+                    replicas:
+                      description: The number of running pods.
+                      format: int32
+                      type: integer
+                  required:
+                  - name
+                  - namespace
+                  type: object
+                type: array
               timeout:
                 format: int32
                 type: integer
+              watchers:
+                items:
+                  description: WatcherCondition watcher matching rules
+                  properties:
+                    id:
+                      type: integer
+                    labels:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                    status:
+                      description: Condition of the Watcher
+                      type: string
+                  required:
+                  - name
+                  - namespace
+                  type: object
+                type: array
             required:
             - exit
             - timeout
