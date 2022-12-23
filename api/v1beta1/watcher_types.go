@@ -107,7 +107,8 @@ type DeploymentCondition struct {
 
 	//Custom logic of been ready
 	// +optional
-	Ready bool `json:"ready,omitempty"`
+	// +kubebuilder:validation:Enum=true,True,TRUE,false,False,FALSE
+	Ready string `json:"ready,omitempty"`
 }
 
 //StatefulSetCondition deployment matching rules
@@ -122,7 +123,8 @@ type StatefulSetCondition struct {
 
 	//Custom logic of been ready
 	// +optional
-	Ready bool `json:"ready,omitempty"`
+	// +kubebuilder:validation:Enum=true,True,TRUE,false,False,FALSE
+	Ready string `json:"ready,omitempty"`
 }
 
 // WatcherStatus defines the observed state of Watcher
