@@ -38,7 +38,7 @@ type WatcherSpec struct {
 	Jobs         []JobCondition                `json:"jobs,omitempty"`
 	Watchers     []WatcherCondition            `json:"watchers,omitempty"`
 	Deployments  []DeploymentCondition         `json:"deployments,omitempty"`
-	StatefulSets []StatefulSetCondition        `json:"statefulSets,omitempty"`
+	StatefulSets []StatefulSetCondition        `json:"statefulsets,omitempty"`
 }
 
 // BasicConfigurationCondition general match rules
