@@ -193,7 +193,7 @@ func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, error) {
 	//Adding the CRD labels, works, but argo-cd prune its as it is not defined on the git side.
 	//maps.Copy(labels, crd.Labels)
 	serviceAccount := ServiceAccount
-	var one, five int32
+	var one int32
 	container := v1.Container{
 		Name:            "main",
 		Image:           image,
@@ -202,7 +202,6 @@ func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, error) {
 		Args:            []string{"watcher", "--crd-api-version", crd.APIVersion, "--crd-namespace", crd.Namespace, "--crd-instance", crd.Name},
 	}
 	one = int32(1)
-	five = int32(5)
 	job := &v1batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      jobName,
@@ -217,7 +216,7 @@ func createWatcherJob(crd *k1v1beta1.Watcher) (*v1batch.Job, error) {
 					Containers:         []v1.Container{container},
 				},
 			},
-			BackoffLimit: &five,
+			BackoffLimit: &one,
 			Completions:  &one,
 		},
 	}
